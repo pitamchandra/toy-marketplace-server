@@ -40,6 +40,17 @@ async function run() {
         res.send(result)
     })
 
+    // get some toys for specific user
+    app.get('/allToys', async(req, res) =>{
+        console.log(req.query);
+        let query = {}
+        if(req.query?.email){
+            query = {email : req.query.email}
+        }
+        const result = await toysCollection.find(query).toArray()
+        res.send(result)
+    })
+
     // get all toys
     app.get('/allToys', async(req, res)=>{
         const result = await toysCollection.find().limit(20).toArray()
@@ -53,6 +64,8 @@ async function run() {
         const result = await toysCollection.findOne(query)
         res.send(result)
     })
+
+    
 
 
   } finally {
