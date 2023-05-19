@@ -42,7 +42,6 @@ async function run() {
 
     // get some toys for specific user
     app.get('/allToys', async(req, res) =>{
-        console.log(req.query);
         let query = {}
         if(req.query?.email){
             query = {email : req.query.email}
@@ -65,10 +64,26 @@ async function run() {
         res.send(result)
     })
 
+    // update a toy
+    app.put('/updateToy/:id', async(req, res) =>{
+        const id = req.params.id;
+        const filter = {_id : new ObjectId(id)}
+        const options = { upsert: true };
+        const updatedToys = req.body;
+        const Toy = {
+            $set: {
+              price: updatedToys.price,
+              quantity: updatedToys.quantity,
+              description: updatedToys.description
+            },
+          };
+        const result = await toysCollection.updateOne(filter, Toy, options)
+        res.send(result)
+    })
+
     // delete my toy
     app.delete('/allToys/:id', async(req, res)=>{
         const id = req.params.id;
-        console.log(id);
         const query = {_id: new ObjectId(id)}
         const result = await toysCollection.deleteOne(query)
         res.send(result)
