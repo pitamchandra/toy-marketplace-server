@@ -26,12 +26,28 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
-    // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    // await client.connect();
+    
 
     const toysCollection = client.db('toyDB').collection('toys');
+
+
+  
+
+    // const result = toysCollection.createIndex(indexKeys, indexOptions)
+
+    // get toys by search
+    // app.get('/addToys/:text' , async(req, res) =>{
+    //     const searchText = req.params.text;
+    //     console.log(searchText);
+    //     const result = await toysCollection.find({
+    //       $or: [
+    //           { title : { $regex : searchText, $options : 'i'}},
+    //           { category : { $regex : searchText, $options : 'i'}},
+    //       ],
+    //     }).toArray()
+    //     res.send(result)
+    // })
 
     // add toys
     app.post('/addToy', async(req, res) =>{
@@ -42,19 +58,21 @@ async function run() {
 
     // get some toys for specific user
     app.get('/allToys', async(req, res) =>{
-        let query = {}
-        if(req.query?.email){
-            query = {email : req.query.email}
-        }
-        const result = await toysCollection.find(query).toArray()
-        res.send(result)
+      if(req.query?.email){
+          let query = {}
+          query = {email : req.query.email}
+          const result = await toysCollection.find(query).sort({price : 1}).toArray()
+          return res.send(result)
+      }
+      const result = await toysCollection.find().toArray()
+      res.send(result)
     })
 
-    // get all toys
-    app.get('/allToys', async(req, res)=>{
-        const result = await toysCollection.find().limit(20).toArray()
-        res.send(result)
-    })
+    // // get all toys
+    // app.get('/allToys', async(req, res)=>{
+    //     const result = await toysCollection.find().limit(20).toArray()
+    //     res.send(result)
+    // })
 
     // get a specific toy
     app.get('/allToys/:id', async(req, res) =>{
@@ -89,7 +107,9 @@ async function run() {
         res.send(result)
     })
 
-    
+    // Send a ping to confirm a successful connection
+    await client.db("admin").command({ ping: 1 });
+    console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
 
   } finally {
