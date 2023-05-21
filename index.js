@@ -67,13 +67,13 @@ async function run() {
     // })
 
     // jwt web token
-    app.post('/jwt', (req, res) =>{
-      const user = req.body;
-      console.log(user);
-      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECREET, {expiresIn : '1h'})
-      res.send({token})
+    // app.post('/jwt', (req, res) =>{
+    //   const user = req.body;
+    //   console.log(user);
+    //   const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECREET, {expiresIn : '1h'})
+    //   res.send({token})
 
-    })
+    // })
 
     // add toys
     app.post('/addToy', async(req, res) =>{
@@ -83,11 +83,11 @@ async function run() {
     })
 
     // get some toys for specific user
-    app.get('/myToys', verifyJWT, async(req, res) =>{
-      const decoded = req.decoded
-      if(decoded.email !== req.query.email){
-        return res.status(403).send({error:1, message:'forbidden access'})
-      }
+    app.get('/myToys', async(req, res) =>{
+      // const decoded = req.decoded
+      // if(decoded.email !== req.query.email){
+      //   return res.status(403).send({error:1, message:'forbidden access'})
+      // }
       if(req.query?.email){
           let query = {}
           query = {email : req.query.email}
