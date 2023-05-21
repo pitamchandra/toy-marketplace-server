@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors')
+var jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express()
 const port = process.env.PORT || 5000;
@@ -22,6 +23,22 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
+
+const verifyJWT = (req, res, next) =>{
+  const authorization = req.headers.authorization;
+  if(!authorization){
+    return res.status(401).send({error: 1, message: 'unauthorized access'})
+  }
+  const token = authorization.split(' ')[1]
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECREET, (err, decoded) =>{
+    if(err){
+      return res.status(401).send({error: true, message : "unauthorize access"})
+    }
+    req.decoded = decoded
+    next()
+  })
+
+}
 
 async function run() {
   try {
@@ -49,6 +66,15 @@ async function run() {
     //     res.send(result)
     // })
 
+    // jwt web token
+    app.post('/jwt', (req, res) =>{
+      const user = req.body;
+      console.log(user);
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECREET, {expiresIn : '1h'})
+      res.send({token})
+
+    })
+
     // add toys
     app.post('/addToy', async(req, res) =>{
         const toy = req.body;
@@ -57,22 +83,24 @@ async function run() {
     })
 
     // get some toys for specific user
-    app.get('/allToys', async(req, res) =>{
+    app.get('/myToys', verifyJWT, async(req, res) =>{
+      const decoded = req.decoded
+      if(decoded.email !== req.query.email){
+        return res.status(403).send({error:1, message:'forbidden access'})
+      }
       if(req.query?.email){
           let query = {}
           query = {email : req.query.email}
           const result = await toysCollection.find(query).sort({price : 1}).toArray()
           return res.send(result)
       }
-      const result = await toysCollection.find().toArray()
-      res.send(result)
     })
 
     // // get all toys
-    // app.get('/allToys', async(req, res)=>{
-    //     const result = await toysCollection.find().limit(20).toArray()
-    //     res.send(result)
-    // })
+    app.get('/allToys', async(req, res)=>{
+        const result = await toysCollection.find().toArray()
+        res.send(result)
+    })
 
     // get a specific toy
     app.get('/allToys/:id', async(req, res) =>{
